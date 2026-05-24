@@ -1,65 +1,120 @@
-// script.js
+const passwordInput = document.getElementById("password");
+const copyBtn = document.getElementById("copyBtn");
+const lengthInput = document.getElementById("length");
+const lengthValue = document.getElementById("lengthValue");
+const generateBtn = document.getElementById("generateBtn");
 
-const addBtn = document.getElementById("addBtn");
-const taskInput = document.getElementById("taskInput");
-const taskList = document.getElementById("taskList");
+const lowercase = document.getElementById("lowercase");
+const uppercase = document.getElementById("uppercase");
+const digits = document.getElementById("digits");
+const symbols = document.getElementById("symbols");
 
-// Додавання нового завдання
-addBtn.addEventListener("click", addTask);
+function generatePassword() {
+  let chars = "";
 
-taskInput.addEventListener("keypress", function(e){
-    if(e.key === "Enter"){
-        addTask();
-    }
+  if (lowercase.checked) chars += "abcdefghijklmnopqrstuvwxyz";
+  if (uppercase.checked) chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if (digits.checked) chars += "0123456789";
+  if (symbols.checked) chars += "!@$#%^&*()_+-=[]{}";
+
+  if (chars.length === 0) {
+    passwordInput.value = "";
+    return;
+  }
+
+  let password = "";
+  const length = Number(lengthInput.value);
+
+  for (let i = 0; i < length; i++) {
+    const index = Math.floor(Math.random() * chars.length);
+    password += chars[index];
+  }
+
+  passwordInput.value = password;
+}
+
+lengthInput.addEventListener("input", () => {
+  lengthValue.textContent = lengthInput.value;
+  generatePassword();
 });
 
-function addTask(){
+generateBtn.addEventListener("click", generatePassword);
+lowercase.addEventListener("change", generatePassword);
+uppercase.addEventListener("change", generatePassword);
+digits.addEventListener("change", generatePassword);
+symbols.addEventListener("change", generatePassword);
 
-    const text = taskInput.value.trim();
+copyBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(passwordInput.value);
+  copyBtn.textContent = "OK";
 
-    if(text === "") return;
+  setTimeout(() => {
+    copyBtn.textContent = "КОПІЯ";
+  }, 1000);
+});
 
-    const li = document.createElement("li");
+generatePassword();
 
-    li.innerHTML = `
-        <div class="left">
-            <button class="check-btn"></button>
-            <span>${text}</span>
-        </div>
+const taskInput = document.getElementById("taskInput");
+const addTaskBtn = document.getElementById("addTaskBtn");
+const taskList = document.getElementById("taskList");
 
-        <button class="delete-btn">✖</button>
-    `;
+function createTask(text) {
+  const task = document.createElement("div");
+  task.className = "task";
 
-    taskList.appendChild(li);
+  task.innerHTML = `
+    <span class="circle"></span>
+    <span class="task-text">${text}</span>
+    <button class="delete-btn">×</button>
+  `;
 
-    taskInput.value = "";
+  const circle = task.querySelector(".circle");
+  const deleteBtn = task.querySelector(".delete-btn");
 
-    addEvents(li);
+  circle.addEventListener("click", () => {
+    task.classList.toggle("done");
+    circle.textContent = task.classList.contains("done") ? "✓" : "";
+  });
+
+  deleteBtn.addEventListener("click", () => {
+    task.remove();
+  });
+
+  taskList.appendChild(task);
 }
 
-// Події для checkbox та delete
-function addEvents(task){
+function addTask() {
+  const text = taskInput.value.trim();
 
-    const checkBtn = task.querySelector(".check-btn");
-    const deleteBtn = task.querySelector(".delete-btn");
+  if (text === "") {
+    alert("Введіть завдання!");
+    return;
+  }
 
-    checkBtn.addEventListener("click", () => {
-
-        task.classList.toggle("completed");
-
-        if(task.classList.contains("completed")){
-            checkBtn.innerHTML = "✔";
-        }else{
-            checkBtn.innerHTML = "";
-        }
-    });
-
-    deleteBtn.addEventListener("click", () => {
-        task.remove();
-    });
+  createTask(text);
+  taskInput.value = "";
+  taskInput.focus();
 }
 
-// Для готових елементів
-document.querySelectorAll("#taskList li").forEach(task => {
-    addEvents(task);
+addTaskBtn.addEventListener("click", addTask);
+
+taskInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    addTask();
+  }
+});
+
+document.querySelectorAll(".task").forEach((task) => {
+  const circle = task.querySelector(".circle");
+  const deleteBtn = task.querySelector(".delete-btn");
+
+  circle.addEventListener("click", () => {
+    task.classList.toggle("done");
+    circle.textContent = task.classList.contains("done") ? "✓" : "";
+  });
+
+  deleteBtn.addEventListener("click", () => {
+    task.remove();
+  });
 });
